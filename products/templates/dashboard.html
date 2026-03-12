@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>Welcome to the dashboard!</p>
+    <a href="{% url 'add_medicine' %}">Add Medicine</a><br>
+    <a href="{% url 'add_order' %}">Add Order</a>
+    <a href="{% url 'medicine_list' %}">View Medicines</a><br>
+    <a href="{% url 'order_list' %}">View Orders</a>
+</body>
+</html>

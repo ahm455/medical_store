@@ -1,0 +1,17 @@
+<table>
+  <tr>
+    <th>Order ID</th>
+    <th>customer</th>
+    <th>medicine</th>
+    <th>Quantity</th>
+  </tr>
+  <tr>
+{%for order in orders %}
+    <td>{{ order.id }}</td>
+    <td>{{ order.customer }}</td>
+    <td>{{ order.medicine }}</td>
+    <td>{{ order.quantity }}</td>
+  </tr>
+{%endfor %}
+</table>
+    

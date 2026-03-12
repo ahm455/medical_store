@@ -1,0 +1,14 @@
+<table>
+  <tr>
+    <th>medicine_id</th>
+    <th>name</th>
+    <th>potency</th>
+  </tr>
+ {% for medicine in medicines %}
+  <tr>
+    <td>{{ medicine.id }}</td>
+    <td>{{ medicine.name }}</td>
+    <td>{{ medicine.potency }}</td>
+  </tr>
+ {% endfor %}
+</table>
