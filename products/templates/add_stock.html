@@ -1,42 +1,19 @@
+{% load rest_framework %}
+<!DOCTYPE html>
 
-
-{% block content %}
-<div class="container" style="max-width: 600px; margin-top: 50px;">
-    <h2>Add / Update Stock</h2>
-
-    <form method="post" novalidate>
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Stock</title>
+</head>
+<body>
+    <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+    <h1>Add Stock</h1>
+    <form method="post">
         {% csrf_token %}
-
-        <!-- Medicine -->
-        <div class="form-group" style="margin-bottom: 15px;">
-            <label for="medicine">Medicine</label>
-            <select name="medicine" id="medicine" class="form-control">
-                {% for med in serializer.medicine%}
-                    <option value="{{ med.id }}">{{ med.medicine_name }} ({{ med.potency }})</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Quantity -->
-        <div class="form-group" style="margin-bottom: 15px;">
-            <label for="quantity">Quantity</label>
-            <input type="number" name="quantity" id="quantity" class="form-control" value="{{ serializer.initial_data.quantity|default:'' }}">
-        </div>
-
-        <!-- Errors -->
-        {% if serializer.errors %}
-            <div style="color: red; margin-bottom: 15px;">
-                <ul>
-                {% for field, errors in serializer.errors.items %}
-                    {% for error in errors %}
-                        <li>{{ field|capfirst }}: {{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        <button type="submit" class="btn btn-primary">Add / Update Stock</button>
+        {% render_form serializer %}
+        <button type="submit">Add Order</button>
     </form>
-</div>
-{% endblock %}
+</body>
+</html>

@@ -31,6 +31,10 @@ class order(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     status=models.CharField(max_length=20, choices=status_choices, default='Pending')
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        profit.objects.create(order=self)
+
     def __str__(self):
         return str(self.customer) 
 
@@ -67,7 +71,18 @@ class profit(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        total_cost_price = sum(item.medicine.cost_price * item.quantity for item in self.order.ordereditems_set.all())
-        total_selling_price = sum(item.total_price for item in self.order.ordereditems_set.all())
+        items = self.order.medicine.all()
+
+        total_cost_price = sum(
+            item.medicine.cost_price * item.quantity for item in items
+        )
+
+        total_selling_price = sum(
+            item.selling_price * item.quantity for item in items
+        )
+
         self.profit_amount = total_selling_price - total_cost_price
+
         super().save(*args, **kwargs)
+    def __str__(self):
+        return f"Profit for Order {self.order.id}: {self.profit_amount}"

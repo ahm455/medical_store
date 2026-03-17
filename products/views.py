@@ -61,9 +61,10 @@ def profit_report(request):
     profits = profit.objects.all()
     weekly_profits = profit.objects.filter(
     order__created_at__gte=timezone.now() - timedelta(days=7)
-    )
+    ).aggregate(total_profit=sum('profit_amount'))['total_profit'] or 0
 
-    monthly_profits = profit.objects.filter(order__created_at__gte=timezone.now() - timedelta(days=30))
+    monthly_profits = profit.objects.filter(
+        order__created_at__gte=timezone.now() - timedelta(days=30)).aggregate(total_profit=sum('profit_amount'))['total_profit'] or 0
     return render(request, 'profit.html', {'profits': profits, 'weekly_profits': weekly_profits, 'monthly_profits': monthly_profits})
 
 def add_stock(request):
