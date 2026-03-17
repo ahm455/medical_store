@@ -10,6 +10,8 @@
             <th>Quantity</th>
             <th>Selling Price</th>
             <th>Total Price</th>
+            <th>order status</th>
+            <th>action</th>
         </tr>
     </thead>
 
@@ -23,6 +25,15 @@
             <td>{{ item.quantity }}</td>
             <td>{{ item.selling_price }}</td>
             <td>{{ item.total_price }}</td>
+            <td>{{ item.order.status }}</td>
+            <td>
+                {% if item.order.status == 'Pending' %}
+                    <a href="{% url 'mark_order_shipped' item.order.id %}">Mark as Shipped</a>
+                {% elif item.order.status == 'Shipped' %}
+                    <a href="{% url 'mark_order_delivered' item.order.id %}">Mark as Delivered</a>
+                {% else %}
+                    Delivered
+                {% endif %}
         </tr>
         {% empty %}
         <tr>

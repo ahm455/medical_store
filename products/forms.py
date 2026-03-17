@@ -1,5 +1,5 @@
 from django import forms
-from .models import Medicine, ordereditems,Customer,order
+from .models import Medicine, ordereditems,Customer,order,stock,profit
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -19,7 +19,7 @@ class OrderForm(serializers.ModelSerializer):
     class Meta:
         model = order
         fields = ['customer']
-        
+
 
 class customerForm(serializers.ModelSerializer):
     username = serializers.CharField(max_length=150)
@@ -39,3 +39,23 @@ class customerForm(serializers.ModelSerializer):
 
         customer = Customer.objects.create(user=user, **validated_data)
         return customer
+
+from rest_framework import serializers
+from .models import stock
+
+class stockForm(serializers.ModelSerializer):
+    class Meta:
+        model = stock
+        fields = ['medicine', 'quantity']
+
+    def save(self, *args, **kwargs):
+        medicine = self.validated_data['medicine']
+        quantity = self.validated_data['quantity']
+
+        try:
+            stock_instance = stock.objects.get(medicine=medicine)
+            stock_instance.quantity += quantity
+            stock_instance.save()
+            return stock_instance
+        except stock.DoesNotExist:
+            return super().save(*args, **kwargs)

@@ -3,16 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .dashboard-container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+        }
+        .dashboard-button {
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff; /* Blue background */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none; /* In case it's an anchor tag styled as a button */
+        }
+        .dashboard-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <div class="links">
             <a href="{% url 'add_medicine' %}">Add Medicine</a><br>
             <a href="{% url 'add_order' %}">Add Order</a><br>
             <a href="{% url 'medicine_list' %}">View Medicines</a><br>
             <a href="{% url 'order_list' %}">View Orders</a><br>
             <a href="{% url 'customer_list' %}">View Customers</a><br>
-            <a href="{% url 'add_customer' %}">Add Customer</a>
+            <a href="{% url 'add_customer' %}">Add Customer</a><br>
+            <a href="{% url 'profit_report' %}">View Profit Report</a><br>
+            <a href="{% url 'stock_list' %}">View Stock</a><br>
+            <a href="{% url 'add_stock' %}">Add Stock</a><br>
         </div>
     </div>
 </body>

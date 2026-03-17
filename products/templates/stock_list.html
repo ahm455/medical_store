@@ -1,0 +1,31 @@
+<a href="{% url 'dashboard' %}">Back to Dashboard</a>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>stocks</title>
+</head>
+<body>
+
+<h2>Stock List</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Medicine Name</th>
+        <th>Quantity</th>
+        <th>action</th>
+    </tr>
+
+    {% for stock in stocks %}
+    <tr>
+        <td>{{ stock.id }}</td>
+        <td>{{ stock.medicine.medicine_name }}</td>
+        <td>{{ stock.quantity }}</td>
+        <td><a href="{% url 'update_stock' stock.id %}">Update Stock</a></td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+</body>
+</html>

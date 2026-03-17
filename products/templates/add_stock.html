@@ -1,0 +1,42 @@
+
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin-top: 50px;">
+    <h2>Add / Update Stock</h2>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Medicine -->
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="medicine">Medicine</label>
+            <select name="medicine" id="medicine" class="form-control">
+                {% for med in serializer.medicine%}
+                    <option value="{{ med.id }}">{{ med.medicine_name }} ({{ med.potency }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Quantity -->
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="quantity">Quantity</label>
+            <input type="number" name="quantity" id="quantity" class="form-control" value="{{ serializer.initial_data.quantity|default:'' }}">
+        </div>
+
+        <!-- Errors -->
+        {% if serializer.errors %}
+            <div style="color: red; margin-bottom: 15px;">
+                <ul>
+                {% for field, errors in serializer.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field|capfirst }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Add / Update Stock</button>
+    </form>
+</div>
+{% endblock %}
