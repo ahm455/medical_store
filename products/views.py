@@ -14,19 +14,12 @@ from django.shortcuts import render
 from .models import Order, Customer, Medicine, Stock
 
 def dashboard(request):
-    # Orders
     total_orders = Order.objects.count()
     pending_orders = Order.objects.filter(status='Pending').count()
     shipped_orders = Order.objects.filter(status='Shipped').count()
     delivered_orders = Order.objects.filter(status='Delivered').count()
-
-    # Customers
     total_customers = Customer.objects.count()
-
-    # Medicines
     total_medicines = Medicine.objects.count()
-
-    # Total value of medicines in stock (calculated in Python)
     stocks = Stock.objects.all()
     total_medicine_value = sum(stock.quantity * stock.medicine.selling_price for stock in stocks)
 
