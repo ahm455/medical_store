@@ -28,9 +28,6 @@ class Stock(models.Model):
     medicine = models.OneToOneField(Medicine, on_delete=models.CASCADE)
     quantity = models.IntegerField()
 
-    def is_low_stock(self):
-        return self.quantity < 10
-
     def __str__(self):
         return f"{self.medicine.medicine_name} - {self.quantity} units"
 

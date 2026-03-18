@@ -9,45 +9,18 @@ class medicineForm(forms.ModelForm):
         model = Medicine
         fields = ['medicine_name', 'potency', 'cost_price', 'selling_price']
 
-
 class OrderedItemsForm(forms.ModelForm):
+    customer = forms.ModelChoiceField(queryset=Customer.objects.all(), empty_label="Select Customer")
+    medicine = forms.ModelChoiceField(queryset=Medicine.objects.all(), empty_label="Select Medicine")
+
     class Meta:
         model = OrderedItem
         fields = ['customer', 'medicine', 'quantity']
 
-    def create(self, validated_data):
-        customer = validated_data.get('customer')
-        medicine = validated_data.get('medicine')
-        quantity = validated_data.get('quantity')
-        order = validated_data.get('order')
-
-        try:
-            stock_obj = Stock.objects.get(medicine=medicine)
-        except Stock.DoesNotExist:
-            raise serializers.ValidationError(f"No stock available for {medicine.medicine_name}")
-
-        if stock_obj.quantity < quantity:
-            raise serializers.ValidationError(f"Not enough stock for {medicine.medicine_name}")
-
-        stock_obj.quantity -= quantity
-        stock_obj.save()
-
-        ordered_item = OrderedItem.objects.create(
-            customer=customer,
-            medicine=medicine,
-            quantity=quantity,
-            selling_price=medicine.selling_price,
-            total_price=medicine.selling_price * quantity,
-            profit_per_item=(medicine.selling_price - medicine.cost_price) * quantity,
-            order=order
-        )
-        return ordered_item
-
-
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['payment_status', 'payment_method', 'status']
+        fields = ['status', 'payment_status', 'payment_method']
 
 
 class customerform(forms.ModelForm):
@@ -57,6 +30,7 @@ class customerform(forms.ModelForm):
 
     def save(self, commit=True):
         customer = super().save(commit=False)
+
         if commit:
             customer.save()
         return customer

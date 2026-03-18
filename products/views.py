@@ -2,14 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Sum
-
 from .models import Customer, Medicine, Stock, Order, OrderedItem, Profit
 from .forms import customerform, medicineForm, StockForm, OrderedItemsForm, OrderForm
-
 from django.shortcuts import render
 from django.db.models import Sum
 from .models import Order, Customer, Medicine, Stock
-
 from django.shortcuts import render
 from .models import Order, Customer, Medicine, Stock
 
@@ -21,9 +18,17 @@ def dashboard(request):
     total_customers = Customer.objects.count()
     total_medicines = Medicine.objects.count()
     stocks = Stock.objects.all()
+    weekly_profits = Profit.objects.filter(
+        order__created_at__gte=timezone.now() - timedelta(days=7)
+    ).aggregate(total_profit=Sum('profit_amount'))['total_profit'] or 0
+    monthly_profits = Profit.objects.filter(
+        order__created_at__gte=timezone.now() - timedelta(days=30)
+    ).aggregate(total_profit=Sum('profit_amount'))['total_profit'] or 0
     total_medicine_value = sum(stock.quantity * stock.medicine.selling_price for stock in stocks)
 
     context = {
+        'weekly_profits': weekly_profits,
+        'monthly_profits': monthly_profits,
         'total_orders': total_orders,
         'pending_orders': pending_orders,
         'shipped_orders': shipped_orders,
@@ -80,10 +85,22 @@ def add_order(request):
         items_form = OrderedItemsForm(request.POST)
 
         if order_form.is_valid() and items_form.is_valid():
-            order = order_form.save()
-            items_form.instance.order = order
-            items_form.save()
+        
+            order = order_form.save(commit=False)
+            order.customer = items_form.cleaned_data['customer']
+            order.save()
+
+    
+            item = items_form.save(commit=False)
+            item.order = order
+            item.customer = order.customer
+            item.save()
+
+            profit_record = Profit.objects.create(order=order)
+            profit_record.calculate_profit()
+
             return redirect('order_list')
+
     else:
         order_form = OrderForm()
         items_form = OrderedItemsForm()
