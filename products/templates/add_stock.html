@@ -10,10 +10,10 @@
 <body>
     <a href="{% url 'dashboard' %}">Back to Dashboard</a>
     <h1>Add Stock</h1>
-    <form method="post">
-        {% csrf_token %}
-        {% render_form serializer %}
-        <button type="submit">Add Order</button>
-    </form>
+    <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add Stock</button>
+</form>
 </body>
 </html>

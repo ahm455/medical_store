@@ -13,7 +13,6 @@
         <th>ID</th>
         <th>Medicine Name</th>
         <th>Quantity</th>
-        <th>action</th>
     </tr>
 
     {% for stock in stocks %}
@@ -21,7 +20,6 @@
         <td>{{ stock.id }}</td>
         <td>{{ stock.medicine.medicine_name }}</td>
         <td>{{ stock.quantity }}</td>
-        <td><a href="{% url 'update_stock' stock.id %}">Update Stock</a></td>
     </tr>
     {% endfor %}
 

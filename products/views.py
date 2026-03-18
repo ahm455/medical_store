@@ -1,116 +1,126 @@
-from django.shortcuts import render,redirect
-from .models import *
-from .forms import *
-from rest_framework.parsers import JSONParser
-from django.http import JsonResponse
-from datetime import datetime, timedelta
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Sum
+
+from .models import Customer, Medicine, Stock, Order, OrderedItem, Profit
+from .forms import customerform, medicineForm, StockForm, OrderedItemsForm, OrderForm
+
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Order, Customer, Medicine, Stock
+
+from django.shortcuts import render
+from .models import Order, Customer, Medicine, Stock
 
 def dashboard(request):
-    return render(request,'dashboard.html')  
-def add_medicine(request):
-    if request.method == 'POST':
-            data = request.POST.dict()
-            serializer = medicineForm(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return redirect('medicine_list')
-    else:
-        serializer=medicineForm()        
-    return render(request,'add_medicine.html',{'serializer':serializer})
-def medicine_list(request):
-    medicines = Medicine.objects.all()
-    return render(request, 'medicine_list.html', {'medicines': medicines})
+    # Orders
+    total_orders = Order.objects.count()
+    pending_orders = Order.objects.filter(status='Pending').count()
+    shipped_orders = Order.objects.filter(status='Shipped').count()
+    delivered_orders = Order.objects.filter(status='Delivered').count()
 
+    # Customers
+    total_customers = Customer.objects.count()
 
-def add_order(request):
-    if request.method == 'POST':
-        data = request.POST.dict()
-        serializer = OrderedItemsForm(data=data)
-        if serializer.is_valid():
-            new_order = order.objects.create(customer=serializer.validated_data['customer'])
-            ordered_item = serializer.save(order=new_order, customer=request.user.customer)
-            ordered_item.order = new_order
-            ordered_item.id = None  # Ensure a new ordereditems instance is created
-            ordered_item.save()
-            return redirect('order_list')
-    else:
-            serializer=OrderedItemsForm()         
-    return render(request,'add_order.html',{'serializer':serializer})          
-def order_list(request):
-    orders = ordereditems.objects.all()
-    return render(request, 'order_list.html', {'orders': orders})
+    # Medicines
+    total_medicines = Medicine.objects.count()
 
+    # Total value of medicines in stock (calculated in Python)
+    stocks = Stock.objects.all()
+    total_medicine_value = sum(stock.quantity * stock.medicine.selling_price for stock in stocks)
 
+    context = {
+        'total_orders': total_orders,
+        'pending_orders': pending_orders,
+        'shipped_orders': shipped_orders,
+        'delivered_orders': delivered_orders,
+        'total_customers': total_customers,
+        'total_medicines': total_medicines,
+        'total_medicine_value': total_medicine_value,
+    }
+    return render(request, 'dashboard.html', context)
 def add_customer(request):
-    if request.method == 'POST':    
-        serializer = customerForm(data=request.POST)
-        if serializer.is_valid():
-            serializer.save()
-            return redirect('customer_list') 
-    else:
-        serializer = customerForm()
-    return render(request, 'add_customer.html', {'serializer': serializer})
-
+    form = customerform(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('customer_list')
+    return render(request, 'add_customer.html', {'form': form})
 
 def customer_list(request):
     customers = Customer.objects.all()
     return render(request, 'customer_list.html', {'customers': customers})
 
-def profit_report(request):
-    profits = profit.objects.all()
-    weekly_profits = profit.objects.filter(
-    order__created_at__gte=timezone.now() - timedelta(days=7)
-    ).aggregate(total_profit=sum('profit_amount'))['total_profit'] or 0
+def add_medicine(request):
+    form = medicineForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('medicine_list')
+    return render(request, 'add_medicine.html', {'form': form})
 
-    monthly_profits = profit.objects.filter(
-        order__created_at__gte=timezone.now() - timedelta(days=30)).aggregate(total_profit=sum('profit_amount'))['total_profit'] or 0
-    return render(request, 'profit.html', {'profits': profits, 'weekly_profits': weekly_profits, 'monthly_profits': monthly_profits})
+def medicine_list(request):
+    medicines = Medicine.objects.all()
+    return render(request, 'medicine_list.html', {'medicines': medicines})
 
 def add_stock(request):
-    if request.method == 'POST':
-        serializer = stockForm(data=request.POST)
-        if serializer.is_valid():
-            serializer.save()  # Stock logic is already handled in serializer
-            return redirect('stock_list')
-    else:
-        serializer = stockForm()
-
-    return render(request, 'add_stock.html', {'serializer': serializer})
+    form = StockForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('stock_list')
+    return render(request, 'add_stock.html', {'form': form})
 
 def stock_list(request):
-    stocks = stock.objects.all()
-    return render(request, 'stock_list.html', {'stocks': stocks})     
-
-def mark_order_shipped(request, order_id):
-    try:
-        order_instance = order.objects.get(id=order_id)
-        order_instance.status = 'Shipped'
-        order_instance.save()
-        return redirect('order_list')
-    except order.DoesNotExist:
-        return redirect('order_list')
-
-def mark_order_delivered(request, order_id):
-    try:
-        order_instance = order.objects.get(id=order_id)
-        order_instance.status = 'Delivered'
-        order_instance.save()
-        return redirect('order_list')
-    except order.DoesNotExist:
-        return redirect('order_list')
+    stocks = Stock.objects.all()
+    return render(request, 'stock_list.html', {'stocks': stocks})
 
 def update_stock(request, stock_id):
-    try:
-        stock_instance = stock.objects.get(id=stock_id)
-    except stock.DoesNotExist:
+    stock_instance = get_object_or_404(Stock, id=stock_id)
+    serializer = StockForm(stock_instance, data=request.POST or None)
+    if request.method == 'POST' and serializer.is_valid():
+        serializer.save()
         return redirect('stock_list')
+    return render(request, 'update_stock.html', {'serializer': serializer})
 
+def add_order(request):
     if request.method == 'POST':
-        new_quantity = request.POST.get('quantity')
-        if new_quantity is not None:
-            stock_instance.quantity = new_quantity
-            stock_instance.save()
-            return redirect('stock_list')
+        order_form = OrderForm(request.POST)
+        items_form = OrderedItemsForm(request.POST)
 
-    return render(request, 'update_stock.html', {'stock': stock_instance})
+        if order_form.is_valid() and items_form.is_valid():
+            order = order_form.save()
+            items_form.instance.order = order
+            items_form.save()
+            return redirect('order_list')
+    else:
+        order_form = OrderForm()
+        items_form = OrderedItemsForm()
+
+    return render(request, 'add_order.html', {
+        'order_form': order_form,
+        'items_form': items_form
+    })
+
+def order_list(request):
+    orders = Order.objects.all()
+    if request.method == 'POST':
+        for order in orders:
+            form = OrderForm(request.POST, instance=order, prefix=f'order_{order.id}')
+            if form.is_valid():
+                form.save()
+        return redirect('order_list')
+    order_forms = [{'order': order, 'form': OrderForm(instance=order, prefix=f'order_{order.id}')} for order in orders]
+    return render(request, 'order_list.html', {'order_forms': order_forms})
+
+def profit_report(request):
+    profits = Profit.objects.all()
+    weekly_profits = Profit.objects.filter(
+        order__created_at__gte=timezone.now() - timedelta(days=7)
+    ).aggregate(total_profit=Sum('profit_amount'))['total_profit'] or 0
+    monthly_profits = Profit.objects.filter(
+        order__created_at__gte=timezone.now() - timedelta(days=30)
+    ).aggregate(total_profit=Sum('profit_amount'))['total_profit'] or 0
+    return render(request, 'profit.html', {
+        'profits': profits,
+        'weekly_profits': weekly_profits,
+        'monthly_profits': monthly_profits
+    })

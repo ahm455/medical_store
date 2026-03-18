@@ -1,61 +1,83 @@
 from django import forms
-from .models import Medicine, ordereditems,Customer,order,stock,profit
+from .models import Medicine, OrderedItem, Customer, Order, Stock, Profit
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
 
-class medicineForm(serializers.ModelSerializer):
+class medicineForm(forms.ModelForm):
     class Meta:
         model = Medicine
         fields = ['medicine_name', 'potency', 'cost_price', 'selling_price']
 
 
-class OrderedItemsForm(serializers.ModelSerializer):
+class OrderedItemsForm(forms.ModelForm):
     class Meta:
-        model = ordereditems
+        model = OrderedItem
         fields = ['customer', 'medicine', 'quantity']
 
-class OrderForm(serializers.ModelSerializer):
-    class Meta:
-        model = order
-        fields = ['customer']
-
-
-class customerForm(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=150)
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = Customer
-        fields = ['name', 'age', 'phone', 'username', 'email', 'password']
-
     def create(self, validated_data):
-        username = validated_data.pop('username')
-        email = validated_data.pop('email')
-        password = validated_data.pop('password')
-
-        user = User.objects.create_user(username=username, email=email, password=password)
-
-        customer = Customer.objects.create(user=user, **validated_data)
-        return customer
-
-from rest_framework import serializers
-from .models import stock
-
-class stockForm(serializers.ModelSerializer):
-    class Meta:
-        model = stock
-        fields = ['medicine', 'quantity']
-
-    def save(self, *args, **kwargs):
-        medicine = self.validated_data['medicine']
-        quantity = self.validated_data['quantity']
+        customer = validated_data.get('customer')
+        medicine = validated_data.get('medicine')
+        quantity = validated_data.get('quantity')
+        order = validated_data.get('order')  # passed from view
 
         try:
-            stock_instance = stock.objects.get(medicine=medicine)
+            stock_obj = Stock.objects.get(medicine=medicine)
+        except Stock.DoesNotExist:
+            raise serializers.ValidationError(f"No stock available for {medicine.medicine_name}")
+
+        if stock_obj.quantity < quantity:
+            raise serializers.ValidationError(f"Not enough stock for {medicine.medicine_name}")
+
+        stock_obj.quantity -= quantity
+        stock_obj.save()
+
+        ordered_item = OrderedItem.objects.create(
+            customer=customer,
+            medicine=medicine,
+            quantity=quantity,
+            selling_price=medicine.selling_price,
+            total_price=medicine.selling_price * quantity,
+            profit_per_item=(medicine.selling_price - medicine.cost_price) * quantity,
+            order=order
+        )
+        return ordered_item
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['payment_status', 'payment_method', 'status']
+
+
+from django import forms
+from .models import Customer
+
+class customerform(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['name', 'age', 'phone']  # no user input
+
+    def save(self, commit=True):
+        customer = super().save(commit=False)
+        from django.contrib.auth.models import User
+        customer.user = User.objects.first()  # assign the same user to all customers
+        if commit:
+            customer.save()
+        return customer
+
+class StockForm(forms.ModelForm):
+    class Meta:
+        model = Stock
+        fields = ['medicine', 'quantity']
+
+    def save(self, commit=True):
+        medicine = self.cleaned_data['medicine']
+        quantity = self.cleaned_data['quantity']
+        try:
+            stock_instance = Stock.objects.get(medicine=medicine)
             stock_instance.quantity += quantity
             stock_instance.save()
             return stock_instance
-        except stock.DoesNotExist:
-            return super().save(*args, **kwargs)
+        except Stock.DoesNotExist:
+            return super().save(commit=commit)

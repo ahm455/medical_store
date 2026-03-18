@@ -1,16 +1,11 @@
+<h2>All Profits</h2>
 {% for profit in profits %}
-    <p>Customer: {{ profit.customer.username }}</p>
+    <p>Customer: {{ profit.order.customer.name }}</p>
     <p>Total Profit: {{ profit.profit_amount }}</p>
 {% endfor %}
 
-<h3>profit this week</h3>
-{% for profit in weekly_profits %}
-    <p>Customer: {{ profit.customer.username }}</p>
-    <p>Total Profit: {{ profit.profit_amount }}</p>
-{% endfor %}
+<h3>Profit This Week</h3>
+<p>Total Profit This Week: {{ weekly_profits }}</p>
 
-<h4>profit this month</h4>
-{% for profit in monthly_profits %}
-    <p>Customer: {{ profit.customer.username }}</p>
-    <p>Total Profit: {{ profit.profit_amount }}</p>
-{% endfor %}
+<h4>Profit This Month</h4>
+<p>Total Profit This Month: {{ monthly_profits }}</p>

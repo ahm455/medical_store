@@ -3,40 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
     <style>
-        .dashboard-container {
-            display: flex;
-            justify-content: space-around;
-            padding: 20px;
-        }
-        .dashboard-button {
-            padding: 15px 30px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff; /* Blue background */
+        .dashboard-buttons a {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 15px;
+            background-color: #007bff;
             color: white;
+            text-decoration: none;
             border: none;
-            border-radius: 5px;
-            text-decoration: none; /* In case it's an anchor tag styled as a button */
+            border-radius: 3px;
+            cursor: pointer;
         }
-        .dashboard-button:hover {
+        .dashboard-buttons a:hover {
             background-color: #0056b3;
         }
     </style>
-</head>
+
+    </head>
 <body>
-    <div class="dashboard-container">
-        <div class="links">
-            <a href="{% url 'add_medicine' %}">Add Medicine</a><br>
-            <a href="{% url 'add_order' %}">Add Order</a><br>
-            <a href="{% url 'medicine_list' %}">View Medicines</a><br>
-            <a href="{% url 'order_list' %}">View Orders</a><br>
-            <a href="{% url 'customer_list' %}">View Customers</a><br>
-            <a href="{% url 'add_customer' %}">Add Customer</a><br>
-            <a href="{% url 'profit_report' %}">View Profit Report</a><br>
-            <a href="{% url 'stock_list' %}">View Stock</a><br>
-            <a href="{% url 'add_stock' %}">Add Stock</a><br>
-        </div>
+    <h1>Dashboard</h1>
+
+    <div class="dashboard-buttons">
+        <a href="{% url 'add_medicine' %}">Add Medicine</a>
+        <a href="{% url 'medicine_list' %}">View Medicines</a><br>
+        <a href="{% url 'add_order' %}">Add Order</a>
+        <a href="{% url 'order_list' %}">View Orders</a><br>
+        <a href="{% url 'customer_list' %}">View Customers</a>
+        <a href="{% url 'add_customer' %}">Add Customer</a><br>
+        <a href="{% url 'profit_report' %}">View Profit Report</a><br>
+        <a href="{% url 'stock_list' %}">View Stock</a>
+        <a href="{% url 'add_stock' %}">Add Stock</a>
+    </div>
+    </div>
+
+    <div class="summary-section">
+        <h2>Orders Summary</h2>
+        <p>Total Orders: {{ total_orders }}</p>
+        <p>Pending Orders: {{ pending_orders }}</p>
+        <p>Shipped Orders: {{ shipped_orders }}</p>
+        <p>Delivered Orders: {{ delivered_orders }}</p>
+    </div>
+
+    <div class="summary-section">
+        <h2>Customers</h2>
+        <p>Total Customers: {{ total_customers }}</p>
+    </div>
+
+    <div class="summary-section">
+        <h2>Medicines</h2>
+        <p>Total Medicines: {{ total_medicines }}</p>
+        <p>Total Value of Medicines: {{ total_medicine_value }}</p>
     </div>
 </body>
 </html>
